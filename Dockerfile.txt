@@ -1,0 +1,24 @@
+# Use official Maven + JDK image
+FROM maven:3.9.0-eclipse-temurin-17 AS build
+
+# Set working directory
+WORKDIR /app
+
+# Copy pom and source code
+COPY pom.xml .
+COPY src ./src
+
+# Build the JAR
+RUN mvn clean install
+
+# Second stage: run the jar
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+
+# Expose port (Render will override with $PORT)
+EXPOSE 8080
+
+# Start the Spring Boot app
+ENTRYPOINT ["java","-jar","app.jar"]
